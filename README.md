@@ -22,15 +22,15 @@ Custom visualizations can be made for HoloFFT by writing Lua code, which HoloFFT
 
 This is how many points you have to work with:
 
-> bands * rows = number of points
+> bands × rows = number of points
 
 Each row holds one frame of FFT data history. Each point represents an FFT value, ranging from 0 to 1. The function should work for any quantity of bands and rows, which is determined by the user. Points can neither be created or destroyed on the fly.
 
 Each update, live FFT data is fed into the last row, and previous FFT data is pushed towards the first row.
 
-If a visualization you make is interesting and unique enough, I'll include as a default preset in HoloFFT!
+If a visualization you make is interesting and unique enough, I'll include it as a default preset in HoloFFT!
 
-If you have an idea for a visualization but math is not your forte, post a comment on one of the places I've advertised HoloFFT and I'll see what I can do.
+If you have an idea for a visualization but math is not your forte, post a comment in one of the places I've advertised HoloFFT and I'll see what I can do.
 
 #### Getting Started
 
@@ -101,7 +101,7 @@ _x_: [-√3, √3]
 _y_: [-√3, √3]  
 _z_: [-√3, √3]
 
-The reason for these peculiar restrictions is so that visualizations can be arbitrarily rotated without going outside of the square render space. If you are not sure what all this means, just assume that no computed coordinate should go beyond ±1. Points outside of the domain might not be rendered.
+If that bit made your eyes glaze over, just assume that no computed coordinate should go beyond ±1. The reason for these peculiar restrictions is so that visualizations can be arbitrarily rotated without going outside of the square render space. Points outside of the domain might not be rendered.
 
 #### Basic Formula Components
 
@@ -183,12 +183,14 @@ While `math.random()` can be used to generate random numbers, you may wish for t
 ```lua
 v % 0.1
 ```
+_Used in:_ Grid, Spray
 
 ###### Value-scaled sine wave
 A sine wave with frequency and amplitude uniformly scaled by `v`. One of many ways to induce sinusoidal motion in the FFT "particle".
 ```lua
 math.sin((1 - r / rows) * 6.28 / v) * v
 ```
+_Used in:_ Sine
 
 ###### Separation of bands into square 2D grid
 Always produces a square grid even if the number of bands is not a perfect square, for unknown reasons.
@@ -197,6 +199,7 @@ local br = bands^0.5 -- square root of bands
 local x = math.floor(b / bands * br) / br * 2 - 1
 local y = (b % br) / br * 2 - 1
 ```
+_Used in:_ Grid
 
 ###### Basic sphere
 Produces a sphere with FFT data perturbing radially from the origin.
@@ -207,6 +210,7 @@ local x = math.cos(theta) * math.sin(r / rows) * v
 local y = math.sin(theta) * math.sin(r / rows) * v
 local z = -math.cos(r / rows) * v
 ```
+_Used in:_ Sphere
 
 ###### Point hiding
 Division by zero causes the value of a variable to be `NaN`, which prevents the point from being rendered without causing any errors, for unknown reasons. Lua does not allow a variable to be directly assigned a value of `NaN`.
@@ -215,6 +219,9 @@ You can incorporate this error into your equations or use a conditional with ter
 ```lua
 0 / 0
 ```
+_Used in:_ Sine, Vortex
 
 ###### Control structures
 You can use Lua if..else statements, [ternary](http://lua-users.org/wiki/TernaryOperator), and other control structures. See the [Lua 5.1 manual](http://www.lua.org/manual/5.1/manual.html#2.4.4) for details.
+
+_Used in:_ Vortex
