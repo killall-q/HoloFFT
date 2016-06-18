@@ -7,7 +7,7 @@ Bands=32
 Rows=128
 PixS=2
 Shift=1
-DispR=250
+DispR=300
 Theta=0.5
 Phi=0.3
 Psi=0
@@ -16,6 +16,6 @@ Perspective=0.2
 ShowSet=
 
 Preset=Circle
-Color1=0040FFA0
-Color2=FFFF6080
+Color1=FFFFFF80
+Color2=0040FF00
 Style=7
