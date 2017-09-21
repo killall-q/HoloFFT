@@ -219,9 +219,7 @@ You can incorporate this error into your equations or use a conditional with ter
 ```lua
 0 / 0
 ```
-_Used in:_ Sine, Vortex
+_Used in:_ Sine
 
 ###### Control structures
 You can use Lua if..else statements, [ternary](http://lua-users.org/wiki/TernaryOperator), and other control structures. See the [Lua 5.1 manual](http://www.lua.org/manual/5.1/manual.html#2.4.4) for details.
-
-_Used in:_ Vortex

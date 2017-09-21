@@ -5,6 +5,7 @@ function Initialize()
     xyScale = 0 -- scale of display and model
     dispR = tonumber(SKIN:GetVariable('DispR')) -- half of display width
     shift = tonumber(SKIN:GetVariable('Shift')) -- shift up off-screen
+    filter = tonumber(SKIN:GetVariable('Filter')) and true or false -- filter silence
     bands = tonumber(SKIN:GetVariable('Bands')) -- number of FFT bands
     rows = tonumber(SKIN:GetVariable('Rows')) -- depth of FFT history
     theta = tonumber(SKIN:GetVariable('Theta')) -- pitch angle
@@ -22,7 +23,7 @@ function Initialize()
         return
     end
     Scale(0)
-    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption Omega'..omega..' SolidColor FF0000][!SetOption Omega'..omega..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"]')
+    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption Omega'..omega..' SolidColor FF0000][!SetOption Omega'..omega..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"]')
     for b = 0, bands - 1 do
         mFFT[b], FFT[b], point[b] = SKIN:GetMeasure('mFFT'..b), {}, {}
         for r = 1, rows do
@@ -48,6 +49,9 @@ function Update()
             FFT[b][r] = passVal and FFT[b][r + 1] or mFFT[b]:GetValue()
             -- Convert FFT data to Cartesian coordinates
             local x, y, z = Preset(bands, b, rows, r, FFT[b][r])
+            if FFT[b][r] == 0 and filter then
+                z = 0/0
+            end
             -- Project to screen space
             local zDepthScale = 1 - ((z * cosPhi - (x * cosPsi + y * sinPsi) * sinPhi) * -sinTheta + (y * cosPsi - x * sinPsi) * cosTheta) * 0.577 * perspective
             point[b][r]:SetX((z * sinPhi + (x * cosPsi + y * sinPsi) * cosPhi) * xyScale * zDepthScale + dispR)
@@ -164,6 +168,11 @@ function SetSens(n, m)
     else return end
     SKIN:GetMeter('SensSlider'):SetX(95 + sens * 0.9)
     SKIN:Bang('[!SetOptionGroup mFFT Sensitivity '..sens..'][!SetOption SensVal Text '..sens..'][!SetVariable Sens '..sens..'][!WriteKeyValue Variables Sens '..sens..' "#@#Settings.inc"]')
+end
+
+function SetFilter(n)
+    SKIN:Bang('[!SetOption Filter'..(filter and 1 or 0)..' SolidColor 505050E0][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor 505050E0"][!SetOption Filter'..(n or 0)..' SolidColor FF0000][!SetOption Filter'..(n or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!WriteKeyValue Variables Filter '..(n or '""')..' "#@#Settings.inc"]')
+    filter = tonumber(n) and true or false
 end
 
 function SetChannel(n)
