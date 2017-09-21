@@ -23,7 +23,7 @@ function Initialize()
         return
     end
     Scale(0)
-    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption Omega'..omega..' SolidColor FF0000][!SetOption Omega'..omega..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"]')
+    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption OmegaSlider X '..(130 - omega * 2250)..'][!SetOption OmegaVal Text '..(omega * 250)..']')
     for b = 0, bands - 1 do
         mFFT[b], FFT[b], point[b] = SKIN:GetMeasure('mFFT'..b), {}, {}
         for r = 1, rows do
@@ -217,8 +217,8 @@ function SetShift(n, m)
     elseif shift + n <= 1 and shift + n >= -0.9 then
         shift = math.floor((shift + n) * 10 + 0.5) * 0.1
     else return end
-    SKIN:GetMeter('ShiftSlider'):SetX(127 - shift * 50)
-    SKIN:Bang('[!WriteKeyValue Variables Shift '..shift..' "#@#Settings.inc"]')
+    SKIN:GetMeter('ShiftSlider'):SetX(125 - shift * 47.5)
+    SKIN:Bang('!WriteKeyValue Variables Shift '..shift..' "#@#Settings.inc"')
 end
 
 function SetPerspective(n, m)
@@ -326,8 +326,13 @@ function SetStyle(n)
     SKIN:Bang('[!SetOptionGroup '..n..' SolidColor FF0000][!SetOptionGroup '..n..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!UpdateMeterGroup Style][!WriteKeyValue Variables Style '..n..' "#@#Settings.inc"]')
 end
 
-function SetOmega(n)
+function SetOmega(n, m)
     -- Set angular velocity
-    SKIN:Bang('[!SetOption Omega'..omega..' SolidColor 505050E0][!SetOption Omega'..omega..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor 505050E0"][!SetOption Omega'..n..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!UpdateMeter Omega'..n..'][!WriteKeyValue Variables Omega '..n..' "#@#Settings.inc"]')
-    omega = n
+    if m then
+        omega = math.floor(m * 0.11) * 0.004 - 0.02
+    elseif omega + n <= 0.02 and omega + n >= -0.02 then
+        omega = math.floor((omega + n) * 250 + 0.5) * 0.004
+    else return end
+    SKIN:GetMeter('OmegaSlider'):SetX(130 + omega * 2250)
+    SKIN:Bang('[!SetOption OmegaVal Text '..(omega * 250)..'][!WriteKeyValue Variables Omega '..omega..' "#@#Settings.inc"]')
 end
