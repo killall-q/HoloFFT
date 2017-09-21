@@ -23,7 +23,7 @@ function Initialize()
         return
     end
     Scale(0)
-    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption OmegaSlider X '..(130 - omega * 2250)..'][!SetOption OmegaVal Text '..(omega * 250)..']')
+    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption OmegaSlider X '..(130 + omega * 2250)..'][!SetOption OmegaVal Text '..(omega * 250)..']')
     for b = 0, bands - 1 do
         mFFT[b], FFT[b], point[b] = SKIN:GetMeasure('mFFT'..b), {}, {}
         for r = 1, rows do
