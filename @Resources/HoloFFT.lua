@@ -121,7 +121,7 @@ end
 
 function InitScroll()
     presetCount = SKIN:GetMeasure('mPresetCount'):GetValue()
-    SKIN:GetMeter('PresetScroll'):SetH(1900 / presetCount - 4)
+    SKIN:GetMeter('PresetScroll'):SetH(math.min(186, 1900 / presetCount - 4))
 end
 
 function ScrollList(n, m)
@@ -303,16 +303,10 @@ function SetStyle(n)
         -- Style: Spectrum
         for b = 0, bands - 1 do
             local color = (function(n)
-                if n < 0.2 then
-                    return '255,'..(n * 1275)..',0,'
-                elseif n < 0.4 then
-                    return ((0.4 - n) * 1275)..',255,0,'
-                elseif n < 0.6 then
-                    return '0,255,'..((n - 0.4) * 1275)..','
-                elseif n < 0.8 then
-                    return '0,'..((0.8 - n) * 1275)..',255,'
+                if n < 0.6 then
+                    return ((0.4 - n) * 1275)..','..(n * 1275)..','..((n - 0.4) * 1275)..','
                 else
-                    return ((n - 0.8) * 1275)..',0,255,'
+                    return ((n - 0.8) * 1275)..','..((0.8 - n) * 1275)..',255,'
                 end
             end)(b / bands)
             for r = 1, rows do
