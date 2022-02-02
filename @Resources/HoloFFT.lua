@@ -22,20 +22,21 @@ function Initialize()
         SKIN:Bang('!Refresh')
         return
     end
-    Scale(0)
-    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption OmegaSlider X '..(130 + omega * 2250)..'][!SetOption OmegaVal Text '..(omega * 250)..']')
     for b = 0, bands - 1 do
         mFFT[b], FFT[b], point[b] = SKIN:GetMeasure('mFFT'..b), {}, {}
         for r = 1, rows do
             FFT[b][r], point[b][r] = 0, SKIN:GetMeter('B'..b..'R'..r)
         end
     end
+    mFFT.peak, FFT.peak = SKIN:GetMeasure('mFFTPeak'), {}
     os.remove(SKIN:GetVariable('@')..'Measures.inc')
     os.remove(SKIN:GetVariable('@')..'Meters.inc')
     LoadPreset()
     SetChannel(SKIN:GetVariable('Channel'))
     SetStyle(style)
-    if (SKIN:GetVariable('ShowSet') ~= '') then
+    Scale(0)
+    SKIN:Bang('[!SetOption AttackSlider X '..(68 + tonumber(SKIN:GetVariable('Attack')) * 0.09)..'][!SetOption DecaySlider X '..(62 + tonumber(SKIN:GetVariable('Decay')) * 0.09)..'][!SetOption SensSlider X '..(95 + tonumber(SKIN:GetVariable('Sens')) * 0.9)..'][!SetOption Filter'..(filter and 1 or 0)..' SolidColor FF0000][!SetOption Filter'..(filter and 1 or 0)..' MouseLeaveAction "!SetOption #*CURRENTSECTION*# SolidColor FF0000"][!SetOption ShiftSlider X '..(127 - shift * 50)..'][!SetOption PerspectiveSlider X '..(101 + perspective * 90)..'][!SetOption OmegaSlider X '..(130 + omega * 2250)..'][!SetOption OmegaVal Text '..(omega * 250)..']')
+    if SKIN:GetVariable('ShowSet') ~= '' then
         SKIN:Bang('[!ShowMeterGroup Control][!ShowMeterGroup Set][!WriteKeyValue Variables ShowSet "" "#@#Settings.inc"]')
     end
 end
@@ -47,8 +48,9 @@ function Update()
         local passVal = r ~= rows and true or false
         for b = 0, bands - 1 do
             FFT[b][r] = passVal and FFT[b][r + 1] or mFFT[b]:GetValue()
+            FFT.peak[r] = passVal and FFT.peak[r + 1] or mFFT.peak:GetValue()
             -- Convert FFT data to Cartesian coordinates
-            local x, y, z = Preset(bands, b, rows, r, FFT[b][r])
+            local x, y, z = Preset(bands, b, rows, r, FFT[b][r], FFT.peak[r])
             if FFT[b][r] == 0 and filter then
                 z = 0/0
             end
@@ -91,8 +93,8 @@ end
 
 function GenMeasures()
     local file = io.open(SKIN:GetVariable('@')..'Measures.inc', 'w')
-    for b = 1, bands - 1 do
-        file:write('[mFFT'..b..']\nMeasure=Plugin\nPlugin=AudioLevel\nParent=mFFT0\nType=Band\nBandIdx='..b..'\nGroup=mFFT\n')
+    for b = 0, bands - 1 do
+        file:write('[mFFT'..b..']\nMeasure=Plugin\nPlugin=AudioLevel\nParent=mFFTPeak\nType=Band\nBandIdx='..b..'\nGroup=mFFT\n')
     end
     file:close()
 end
@@ -145,7 +147,7 @@ function SetAttack(n, m)
         attack = math.floor((attack + n) * 0.01 + 0.5) * 100
     else return end
     SKIN:GetMeter('AttackSlider'):SetX(68 + attack * 0.09)
-    SKIN:Bang('[!SetOptionGroup mFFT FFTAttack '..attack..'][!SetOption AttackVal Text '..attack..'][!SetVariable Attack '..attack..'][!WriteKeyValue Variables Attack '..attack..' "#@#Settings.inc"]')
+    SKIN:Bang('[!SetOption mFFTPeak PeakAttack '..attack..'][!SetOption mFFTPeak FFTAttack '..attack..'][!SetOption AttackVal Text '..attack..'][!SetVariable Attack '..attack..'][!WriteKeyValue Variables Attack '..attack..' "#@#Settings.inc"]')
 end
 
 function SetDecay(n, m)
@@ -156,7 +158,7 @@ function SetDecay(n, m)
         decay = math.floor((decay + n) * 0.01 + 0.5) * 100
     else return end
     SKIN:GetMeter('DecaySlider'):SetX(62 + decay * 0.09)
-    SKIN:Bang('[!SetOptionGroup mFFT FFTDecay '..decay..'][!SetOption DecayVal Text '..decay..'][!SetVariable Decay '..decay..'][!WriteKeyValue Variables Decay '..decay..' "#@#Settings.inc"]')
+    SKIN:Bang('[!SetOption mFFTPeak PeakDecay '..decay..'][!SetOption mFFTPeak FFTDecay '..decay..'][!SetOption DecayVal Text '..decay..'][!SetVariable Decay '..decay..'][!WriteKeyValue Variables Decay '..decay..' "#@#Settings.inc"]')
 end
 
 function SetSens(n, m)
@@ -167,7 +169,7 @@ function SetSens(n, m)
         sens = math.floor((sens + n) * 0.1 + 0.5) * 10
     else return end
     SKIN:GetMeter('SensSlider'):SetX(95 + sens * 0.9)
-    SKIN:Bang('[!SetOptionGroup mFFT Sensitivity '..sens..'][!SetOption SensVal Text '..sens..'][!SetVariable Sens '..sens..'][!WriteKeyValue Variables Sens '..sens..' "#@#Settings.inc"]')
+    SKIN:Bang('[!SetOption mFFTPeak Sensitivity '..sens..'][!SetOption SensVal Text '..sens..'][!SetVariable Sens '..sens..'][!WriteKeyValue Variables Sens '..sens..' "#@#Settings.inc"]')
 end
 
 function SetFilter(n)
@@ -179,19 +181,19 @@ function SetChannel(n)
     local name = {[0]='Left','Right','Center','Subwoofer','Back Left','Back Right','Side Left','Side Right'}
     if n == 'Stereo' then
         -- Split bands between L and R channels
-        for i = 0, bands / 2 - 1 do
-            SKIN:Bang('!SetOption mFFT'..i..' Channel L')
+        for b = 0, bands / 2 - 1 do
+            SKIN:Bang('[!SetOption mFFT'..b..' Channel L][!SetOption mFFT'..b..' BandIdx '..(bands - b * 2 - 2)..']')
         end
-        for i = bands / 2, bands - 1 do
-            SKIN:Bang('[!SetOption mFFT'..i..' Channel R][!SetOption mFFT'..i..' BandIdx '..(bands - i)..']')
+        for b = bands / 2, bands - 1 do
+            SKIN:Bang('[!SetOption mFFT'..b..' Channel R][!SetOption mFFT'..b..' BandIdx '..(b * 2 - bands - 2)..']')
         end
     else
         SKIN:Bang('!SetOptionGroup mFFT Channel '..n)
-        for i = bands / 2, bands - 1 do
-            SKIN:Bang('!SetOption mFFT'..i..' BandIdx '..i)
+        for b = 0, bands - 1 do
+            SKIN:Bang('!SetOption mFFT'..b..' BandIdx '..b)
         end
     end
-    SKIN:Bang('[!SetOption ChannelSet Text "'..(name[n] or n)..'"][!SetVariable Channel '..n..'][!WriteKeyValue Variables Channel '..n..' "#@#Settings.inc"]')
+    SKIN:Bang('[!SetOption ChannelSet Text "'..(name[tonumber(n)] or n)..'"][!SetVariable Channel '..n..'][!WriteKeyValue Variables Channel '..n..' "#@#Settings.inc"]')
 end
 
 function SetRes(r)

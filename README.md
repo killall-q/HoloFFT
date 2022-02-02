@@ -16,7 +16,7 @@ For an explanation of the 3D rendering algorithm, see [Hologram](https://github.
 
 ## Creating Your Own Visualizations
 
-#### Overview
+### Overview
 
 Custom visualizations can be made for HoloFFT by writing Lua code, which HoloFFT will convert into a function. This function calculates the _x_, _y_, and _z_ coordinates of a set of points, one point at a time, 40 times a second.
 
@@ -32,7 +32,7 @@ If a visualization you make is interesting and unique enough, I'll include it as
 
 If you have an idea for a visualization but math is not your forte, post a comment in one of the places I've advertised HoloFFT and I'll see what I can do.
 
-#### Getting Started
+### Getting Started
 
 Go to this directory:
 
@@ -40,7 +40,7 @@ Go to this directory:
 
 Duplicate the file of an existing preset, and open it in your favorite text editor.
 
-#### Function Outline
+### Function Outline
 
 A basic visualization function (Plane.lua is shown) looks like this:
 ```lua
@@ -81,6 +81,8 @@ total number of rows
 number of current row, ranging from 1 to rows
 * __v__  
 value of FFT at current band and row, ranging from 0 to 1
+* __p__  
+peak of audio at current row, ranging from 0 to 1
 
 Additionally, you can use any built-in [Lua 5.1 functions](http://www.lua.org/manual/5.1/#index). Global variables and external Lua libraries cannot be used. Rainmeter [variables](https://docs.rainmeter.net/manual/lua-scripting/#GetVariable) and measure values are allowed, but I have not tested to see if they pose a performance penalty.
 
@@ -103,19 +105,19 @@ _z_: [-√3, √3]
 
 If that bit made your eyes glaze over, just assume that no computed coordinate should go beyond ±1. The reason for these peculiar restrictions is so that visualizations can be arbitrarily rotated without going outside of the square render space. Points outside of the domain might not be rendered.
 
-#### Basic Formula Components
+### Basic Formula Components
 
 No matter how complex a visualization looks, most visualizations are just creative combinations of a few basic components. Listed here are only a few of the infinite possibilities.
 
 [Desmos](https://www.desmos.com/calculator), a free online graphing calculator, may be useful.
 
-###### Progress along bands
+#### Progress along bands
 Fractional progress along the range of bands, ranging from 0 to 1.
 ```lua
 b / bands
 ```
 
-###### Progress along rows
+#### Progress along rows
 Multiply these formulas by `v` to achieve the illusion of smooth motion of a "particle":
 
 Constant velocity
@@ -136,7 +138,7 @@ Smooth velocity curve from zero to positive to zero (constant positive, then con
 ```
 ![velocity along rows](http://i.imgur.com/FvpBJCp.gif)
 
-###### Cylinder conversion
+#### Cylinder conversion
 The foundation of any cylindrical visualization, tack on various multiplicands to create variations on a basic cylinder. After that, you can calculate the _z_ variable however you wish.
 ```lua
 local theta = b / bands * 6.28
@@ -144,14 +146,14 @@ local x = math.cos(theta)
 local y = math.sin(theta)
 ```
 
-###### Cylinder conversion with half-circle twist
+#### Cylinder conversion with half-circle twist
 All default cylindrical and spherical presets incorporate the same twist that creates a visually appealing effect when the visualization is automatically counter-rotated. They would be quite boring otherwise.
 ```lua
 local theta = b / bands * 6.28 + r * 0.02454
 ```
 `r * π / 128 = r * 0.02454`
 
-###### Value scaling
+#### Value scaling
 `v`, the FFT value, is what makes your visualization react to audio. Use it as a coefficient for other components.
 
 Linear — uniform scaling
@@ -176,23 +178,23 @@ Inverse Root — higher values of `v` have a greater effect
 ```
 ![value scaling](http://i.imgur.com/jONYq0r.gif)
 
-#### Advanced Formula Components
+### Advanced Formula Components
 
-###### Pseudorandom number generator
-While `math.random()` can be used to generate random numbers, you may wish for the random number to persist to the next row in the next frame. For that, we derive our "random" number from `v`, because `v` is the only persistent input variable that carries from row to row, frame to frame.
+#### Pseudorandom number generator
+While `math.random()` can be used to generate random numbers, you may wish for the random number to persist to the next row in the next frame. For that, we derive our "random" number from `v` or `p`, because those are the only persistent input variables that carry from row to row, frame to frame.
 ```lua
 v % 0.1
 ```
 _Used in:_ Grid, Spray
 
-###### Value-scaled sine wave
+#### Value-scaled sine wave
 A sine wave with frequency and amplitude uniformly scaled by `v`. One of many ways to induce sinusoidal motion in the FFT "particle".
 ```lua
 math.sin((1 - r / rows) * 6.28 / v) * v
 ```
 _Used in:_ Sine
 
-###### Separation of bands into square 2D grid
+#### Separation of bands into square 2D grid
 Always produces a square grid even if the number of bands is not a perfect square, for unknown reasons.
 ```lua
 local br = bands^0.5 -- square root of bands
@@ -201,7 +203,7 @@ local y = (b % br) / br * 2 - 1
 ```
 _Used in:_ Grid
 
-###### Basic sphere
+#### Basic sphere
 Produces a sphere with FFT data perturbing radially from the origin.
 ```lua
 local theta = b / bands * 6.28
@@ -210,9 +212,9 @@ local x = math.cos(theta) * math.sin(r / rows) * v
 local y = math.sin(theta) * math.sin(r / rows) * v
 local z = -math.cos(r / rows) * v
 ```
-_Used in:_ Sphere
+_Used in:_ Sphere, Spheroid, Dipole
 
-###### Point hiding
+#### Point hiding
 Division by zero causes the value of a variable to be `NaN`, which prevents the point from being rendered without causing any errors, for unknown reasons. Lua does not allow a variable to be directly assigned a value of `NaN`.
 
 You can incorporate this error into your equations or use a conditional with ternary. Only one of the return variables needs to be `NaN`.
@@ -221,5 +223,5 @@ You can incorporate this error into your equations or use a conditional with ter
 ```
 _Used in:_ Sine
 
-###### Control structures
+#### Control structures
 You can use Lua if..else statements, [ternary](http://lua-users.org/wiki/TernaryOperator), and other control structures. See the [Lua 5.1 manual](http://www.lua.org/manual/5.1/manual.html#2.4.4) for details.
