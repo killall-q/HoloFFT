@@ -9,14 +9,14 @@ Rows=256
 PixS=3
 DispR=400
 Shift=1
-Theta=0.8
-Phi=0.3
+Theta=0.4
+Phi=0
 Psi=0
 Omega=-0.02
 Perspective=0.2
 ShowSet=
 
-Preset=Dipole
+Preset=Fountain
 Color1=FFFFFFA0
 Color2=0040FF00
 Style=7

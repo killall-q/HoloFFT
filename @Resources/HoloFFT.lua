@@ -46,9 +46,9 @@ function Update()
     local sinTheta, cosTheta, sinPhi, cosPhi, sinPsi, cosPsi = math.sin(theta), math.cos(theta), math.sin(phi), math.cos(phi), math.sin(psi), math.cos(psi)
     for r = 1, rows do
         local passVal = r ~= rows and true or false
+        FFT.peak[r] = passVal and FFT.peak[r + 1] or mFFT.peak:GetValue()
         for b = 0, bands - 1 do
             FFT[b][r] = passVal and FFT[b][r + 1] or mFFT[b]:GetValue()
-            FFT.peak[r] = passVal and FFT.peak[r + 1] or mFFT.peak:GetValue()
             -- Convert FFT data to Cartesian coordinates
             local x, y, z = Preset(bands, b, rows, r, FFT[b][r], FFT.peak[r])
             if FFT[b][r] == 0 and filter then
