@@ -14,7 +14,7 @@ Phi=0
 Psi=0
 Omega=-0.02
 Perspective=0.2
-ShowSet=
+ShowSet=0
 
 Preset=Fountain
 Color1=FFFFFFA0
