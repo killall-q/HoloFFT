@@ -1,6 +1,6 @@
 [Variables]
-Attack=0
-Decay=0
+Attack=200
+Decay=200
 Sens=60
 Filter=1
 Channel=Sum
@@ -9,14 +9,14 @@ Rows=256
 PixS=3
 DispR=400
 Shift=1
-Theta=0.4
-Phi=0
+Theta=1.2
+Phi=0.4
 Psi=0
 Omega=-0.02
 Perspective=0.2
 ShowSet=0
 
-Preset=Fountain
+Preset=Sphere
 Color1=FFFFFFA0
 Color2=0040FF00
 Style=7

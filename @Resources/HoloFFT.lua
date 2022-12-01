@@ -62,33 +62,31 @@ function Update()
   end
 end
 
-function Pitch(n)
-  theta = math.floor((theta + n) % 6.3 * 10 + 0.5) * 0.1
+function Pitch(n, reset)
+  theta = reset and 0 or math.floor((theta + n) % 6.3 * 10 + 0.5) * 0.1
   SKIN:Bang('!WriteKeyValue Variables Theta '..theta..' "#@#Settings.inc"')
 end
 
-function Roll(n)
-  phi = math.floor((phi + n) % 6.3 * 10 + 0.5) * 0.1
+function Roll(n, reset)
+  phi = reset and 0 or math.floor((phi + n) % 6.3 * 10 + 0.5) * 0.1
   SKIN:Bang('!WriteKeyValue Variables Phi '..phi..' "#@#Settings.inc"')
 end
 
-function Yaw(n)
-  psi = math.floor((psi + n) % 6.3 * 10 + 0.5) * 0.1
+function Yaw(n, reset)
+  psi = reset and 0 or math.floor((psi + n) % 6.3 * 10 + 0.5) * 0.1
   SKIN:Bang('!WriteKeyValue Variables Psi '..psi..' "#@#Settings.inc"')
 end
 
 function Scale(n)
-  if 70 <= dispR + n and dispR + n <= tonumber(SKIN:GetVariable('SCREENAREAWIDTH')) / 2 then
-    dispR = dispR + n
-    xyScale = dispR * 0.577 -- max radius is square root of 3
-    SKIN:Bang('[!MoveMeter '..(dispR * 2)..' '..(dispR * 2)..' Spacer][!SetOption Handle W '..(dispR * 2)..'][!SetOption Handle H '..(dispR * 2)..'][!WriteKeyValue Variables DispR '..dispR..' "#@#Settings.inc"]')
-  end
+  if dispR + n < 70 and tonumber(SKIN:GetVariable('SCREENAREAWIDTH')) / 2 < dispR + n then return end
+  dispR = dispR + n
+  xyScale = dispR * 0.577 -- max radius is square root of 3
+  SKIN:Bang('[!MoveMeter '..(dispR * 2)..' '..(dispR * 2)..' Spacer][!SetOption Handle W '..(dispR * 2)..'][!SetOption Handle H '..(dispR * 2)..'][!WriteKeyValue Variables DispR '..dispR..' "#@#Settings.inc"]')
 end
 
 function HideControls()
-  if not isLocked then
-    SKIN:Bang('[!HideMeterGroup Control][!HideMeterGroup Set]')
-  end
+  if isLocked then return end
+  SKIN:Bang('[!HideMeterGroup Control][!HideMeterGroup Set]')
 end
 
 function GenMeasures()
@@ -203,10 +201,9 @@ end
 
 function SetPixS()
   local set = tonumber(SKIN:GetVariable('Set'))
-  if set and set > 0 then
-    SKIN:Bang('[!SetOptionGroup P W #Set#][!SetOptionGroup P H #Set#][!SetOption PixSSet Text "#Set# px"][!SetVariable PixS #Set#][!WriteKeyValue Variables PixS #Set# "#@#Settings.inc"]')
-    isLocked = false
-  end
+  if not set or set <= 0 then return end
+  SKIN:Bang('[!SetOptionGroup P W #Set#][!SetOptionGroup P H #Set#][!SetOption PixSSet Text "#Set# px"][!SetVariable PixS #Set#][!WriteKeyValue Variables PixS #Set# "#@#Settings.inc"]')
+  isLocked = false
 end
 
 function SetShift(n, m)
@@ -228,12 +225,11 @@ function SetPerspective(n, m)
 end
 
 function SetColor(n)
-  if SKIN:GetVariable('Set') ~= '' then
-    SKIN:Bang('[!SetOption Color'..n..'Set Text "#Set#"][!SetVariable Color'..n..' "#Set#"][!WriteKeyValue Variables Color'..n..' "#Set#" "#@#Settings.inc"]')
-    isLocked = false
-    if style < 4 then
-      SetStyle(style)
-    end
+  if SKIN:GetVariable('Set') == '' then return end
+  SKIN:Bang('[!SetOption Color'..n..'Set Text "#Set#"][!SetVariable Color'..n..' "#Set#"][!WriteKeyValue Variables Color'..n..' "#Set#" "#@#Settings.inc"]')
+  isLocked = false
+  if style < 4 then
+    SetStyle(style)
   end
 end
 
@@ -288,9 +284,9 @@ function SetStyle(n)
     for r = 1, rows do
       local row = rows == 1 and 1 or (r - 1) / (rows - 1)
       local colorGrad = (RGBA[2][1] + (RGBA[1][1] - RGBA[2][1]) * row)..','..
-      (RGBA[2][2] + (RGBA[1][2] - RGBA[2][2]) * row)..','..
-      (RGBA[2][3] + (RGBA[1][3] - RGBA[2][3]) * row)..','..
-      (RGBA[2][4] + (RGBA[1][4] - RGBA[2][4]) * row)
+        (RGBA[2][2] + (RGBA[1][2] - RGBA[2][2]) * row)..','..
+        (RGBA[2][3] + (RGBA[1][3] - RGBA[2][3]) * row)..','..
+        (RGBA[2][4] + (RGBA[1][4] - RGBA[2][4]) * row)
       for b = 0, bands - 1 do
         SKIN:Bang('!SetOption B'..b..'R'..r..' SolidColor '..colorGrad)
       end
